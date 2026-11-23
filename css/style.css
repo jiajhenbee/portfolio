@@ -49,6 +49,10 @@ body {
    ------------------------------------------------------------------------ */
 .brand { display: flex; align-items: center; gap: 8px; }
 .brand__logo { width: 32px; height: 32px; }
+.brand__stripes { transition: fill 0.25s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .brand__stripes { transition: none; }
+}
 .brand__name {
   font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.5rem);
   line-height: 1.2;
