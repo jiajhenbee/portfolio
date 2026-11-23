@@ -1,0 +1,113 @@
+/* ==========================================================================
+   Bee Li — landing page
+   Layout: one left-aligned column, centred; uniform grey Inter, light theme.
+   ========================================================================== */
+
+/* Reset
+   ------------------------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img { max-width: 100%; display: block; }
+
+/* Design tokens
+   ------------------------------------------------------------------------ */
+:root {
+  --bg: #FCFCFB;
+  --fg: #1A1A1D;
+  --muted: #6E6E76;
+  --underline: rgba(110, 110, 118, 0.45);
+  --underline-strong: rgba(26, 26, 29, 0.4);
+  --accent: #3B4ECC;
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+
+/* Base
+   ------------------------------------------------------------------------ */
+body {
+  background: var(--bg);
+  color: var(--muted);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.003em;
+}
+
+/* Layout
+   ------------------------------------------------------------------------ */
+.wrap {
+  max-width: 704px;
+  margin-inline: auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  padding-block: clamp(4rem, 14vh, 10rem);
+}
+.col { display: flex; flex-direction: column; gap: 32px; }
+.head { display: flex; flex-direction: column; gap: 24px; }
+
+/* Brand
+   ------------------------------------------------------------------------ */
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand__logo { width: 32px; height: 32px; }
+.brand__name {
+  font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.5rem);
+  line-height: 1.2;
+  color: var(--muted);
+}
+
+/* Text
+   ------------------------------------------------------------------------ */
+.lede, .body p {
+  font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.5rem);
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 0;
+}
+.body { display: flex; flex-direction: column; gap: 18px; }
+
+/* Links
+   ------------------------------------------------------------------------ */
+a.ln {
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--underline-strong);
+  transition: color 0.18s ease, text-decoration-color 0.18s ease;
+}
+a.ln:hover { color: var(--fg); text-decoration-color: var(--fg); }
+
+.foot a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 15px;
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--underline-strong);
+  transition: text-decoration-color 0.18s ease;
+}
+.foot a:hover { text-decoration-color: var(--fg); }
+.foot .arrow { text-decoration: none; }
+
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Motion
+   ------------------------------------------------------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  .col > * { animation: fade 0.6s ease both; }
+  .col > *:nth-child(2) { animation-delay: 0.05s; }
+  .col > *:nth-child(3) { animation-delay: 0.1s; }
+  @keyframes fade {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+}

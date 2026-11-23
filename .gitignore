@@ -1,0 +1,5 @@
+# Editor / OS
+.DS_Store
+
+# Local tooling (Claude Code preview server config)
+.claude/
