@@ -1,0 +1,13 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="profolio_logo">
+<g id="Combined Shape">
+<path id="Mask" d="M31 16C31 22.2986 30.2334 25.5023 24.4677 28.5972C18.4995 31.8009 13.5005 31.8009 7.53226 28.5972C1.76661 25.5023 1 22.2986 1 16C1 9.70138 1.76661 6.4977 7.53226 3.40276C13.5005 0.19908 18.4995 0.19908 24.4677 3.40276C30.2334 6.4977 31 9.70138 31 16Z" fill-rule="evenodd" clip-rule="evenodd" fill="#191B32"/>
+<mask id="mask0_9_30" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="1" y="1" width="30" height="30">
+<path id="Mask_2" d="M31 16C31 22.2986 30.2334 25.5023 24.4677 28.5972C18.4995 31.8009 13.5005 31.8009 7.53226 28.5972C1.76661 25.5023 1 22.2986 1 16C1 9.70138 1.76661 6.4977 7.53226 3.40276C13.5005 0.19908 18.4995 0.19908 24.4677 3.40276C30.2334 6.4977 31 9.70138 31 16Z" fill-rule="evenodd" clip-rule="evenodd" fill="white"/>
+</mask>
+<g mask="url(#mask0_9_30)">
+<path id="Combined Shape_2" d="M32 24H0V18.2998H32V24ZM32 13.7002H0V8H32V13.7002Z" fill="#FFBA1A"/>
+</g>
+</g>
+</g>
+</svg>

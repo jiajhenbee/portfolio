@@ -11,7 +11,7 @@ portfolio/
     css/
       style.css           # all styles + design tokens
     images/
-      bee-logo.png         # the "b" brand mark
+      bee-logo.svg         # the "b" brand mark
   README.md
 ```
 
