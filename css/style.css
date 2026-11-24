@@ -88,6 +88,32 @@ a.ln {
 }
 a.ln:hover { color: var(--fg); text-decoration-color: var(--fg); }
 
+/* Highlighter-pen sweep: a yellow band (logo yellow at 60%) drawn behind the
+   link from left to right on hover or keyboard focus. Add "ln--mark" to a link. */
+a.ln--mark {
+  position: relative;
+  z-index: 0; /* keeps the stroke behind the text but above the page */
+}
+/* The stroke itself: an SVG brush shape with rough, bristly edges, stretched
+   to the width of the word and revealed left to right by un-clipping it. */
+a.ln--mark::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 4% -5px 0;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%2040'%20preserveAspectRatio='none'%3E%3Cfilter%20id='r'%20x='-10%25'%20y='-30%25'%20width='120%25'%20height='160%25'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.03%200.35'%20numOctaves='2'%20seed='4'%20result='n'/%3E%3CfeDisplacementMap%20in='SourceGraphic'%20in2='n'%20scale='10'%20xChannelSelector='R'%20yChannelSelector='G'/%3E%3C/filter%3E%3Cpath%20filter='url(%23r)'%20fill='%23FFBA1A'%20fill-opacity='0.6'%20d='M5%2010C22%207%2046%209%2070%207S93%208%2096%2011C97%2018%2095%2025%2096%2031C80%2034%2052%2032%2030%2034S8%2033%204%2030C3%2024%205%2017%205%2010Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  clip-path: inset(0 100% 0 0); /* hidden: clipped away from the right */
+  transition: clip-path 0.3s ease-out;
+  pointer-events: none;
+}
+a.ln--mark:focus-visible::before { clip-path: inset(0 0 0 0); }
+@media (hover: hover) {
+  a.ln--mark:hover::before { clip-path: inset(0 0 0 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  a.ln--mark::before { transition: none; }
+}
+
 .foot a {
   display: inline-flex;
   align-items: center;
@@ -103,6 +129,44 @@ a.ln:hover { color: var(--fg); text-decoration-color: var(--fg); }
 }
 .foot a:hover { text-decoration-color: var(--fg); }
 .foot .arrow { text-decoration: none; }
+
+/* Link preview
+   A small app icon that pops up above a link on hover or keyboard focus.
+   Markup: <span class="pop"><a class="ln">…</a><img class="pop__img" alt=""></span>
+   ------------------------------------------------------------------------ */
+.pop { position: relative; white-space: nowrap; }
+.pop__img {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  width: 40px;
+  height: 40px;
+  max-width: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 3px 0 rgba(26, 26, 29, 0.12);
+  opacity: 0;
+  visibility: hidden;
+  /* --pop-rot is set by js/logo.js to a random tilt each time the link is hovered */
+  /* Hidden state is 32px (0.8 scale); it grows to the full 40px when shown */
+  transform: translate(-50%, 0) rotate(var(--pop-rot, 0deg)) scale(0.8);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  pointer-events: none;
+}
+.pop a:focus-visible + .pop__img {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0) rotate(var(--pop-rot, 0deg));
+}
+@media (hover: hover) {
+  .pop a:hover + .pop__img {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0) rotate(var(--pop-rot, 0deg));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pop__img { transition: none; transform: translate(-50%, 0) rotate(var(--pop-rot, 0deg)); }
+}
 
 a:focus-visible {
   outline: 2px solid var(--accent);

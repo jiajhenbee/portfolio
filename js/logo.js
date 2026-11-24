@@ -60,6 +60,23 @@
     });
   }
 
+  /* -- Link preview icons ----------------------------------------------- */
+  // Each time a link with a pop-up icon is hovered or focused, tilt the icon
+  // by a fresh random angle between -20 and 20 degrees.
+  document.querySelectorAll(".pop").forEach(function (pop) {
+    var link = pop.querySelector("a");
+    var img = pop.querySelector(".pop__img");
+    if (!link || !img) return;
+
+    function tilt() {
+      var deg = Math.round(Math.random() * 40 - 20);
+      img.style.setProperty("--pop-rot", deg + "deg");
+    }
+
+    link.addEventListener("mouseenter", tilt);
+    link.addEventListener("focus", tilt);
+  });
+
   /* -- Text cursor ------------------------------------------------------ */
   // Only animate the cursor colour when motion is allowed; otherwise the
   // static bar cursor from the stylesheet stays in place.
