@@ -1,12 +1,13 @@
 /* ==========================================================================
-   Bee Li — colour play
+   Bee Li — colour play and cursor
    • Logo stripes: while the pointer stays on the logo, they keep cycling
      through fully random colours, returning to the original yellow on leave.
-   • Text cursor: while the pointer is over text, the slim bar cursor keeps
-     cycling through the same random colours, returning to its static colour
-     on leave.
-   Cycling is gentle (slow interval + smooth transition) and is disabled when
-   the user prefers reduced motion.
+   • Link preview icons: a random tilt each time a product link is hovered.
+   • Dot cursor: two small dots replace the system cursor. They glide after
+     the pointer, part slightly while moving and merge again when it stops.
+   • Cursor label: an "Open" pill takes over from the dots on product links.
+   The dot cursor is only used with a mouse or trackpad, and never when the
+   user prefers reduced motion: those visitors keep their system cursor.
    ========================================================================== */
 (function () {
   "use strict";
@@ -16,7 +17,6 @@
 
   var logo = document.querySelector(".brand__logo");
   var stripes = document.getElementById("logoStripes");
-  var textEls = document.querySelectorAll(".lede, .body p, .brand__name");
 
   var reduceMotion = window.matchMedia
     ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -77,24 +77,153 @@
     link.addEventListener("focus", tilt);
   });
 
-  /* -- Cursor label ----------------------------------------------------- */
-  // A small "Open ↗" pill that appears beside the pointer while it is over a
-  // product link, and follows it. The real cursor stays visible. Mouse and
-  // trackpad only: skipped on touch devices.
+  /* -- Pointer capabilities --------------------------------------------- */
   var finePointer = window.matchMedia
     ? window.matchMedia("(hover: hover) and (pointer: fine)").matches
     : false;
+  // The dot cursor hides the system cursor, so it is only switched on from
+  // here: if this script never runs, the normal cursor is still there.
+  var dotCursor = finePointer && !reduceMotion;
+  var root = document.documentElement;
+
+  /* -- Dot cursor ------------------------------------------------------- */
+  // Two 8px dots stacked on the pointer: logo ink on top, logo yellow beneath.
+  // The pair glides after the pointer with a little lag, which gives it weight.
+  // While it is catching up, the dots part by a few px in opposite directions
+  // (yellow leaning ahead, ink trailing); once the pointer rests they ease
+  // back into a single round dot. Faster movement also stretches the dots
+  // along the direction of travel. Nothing bounces.
+  if (dotCursor) {
+    var FOLLOW = 0.25;      // share of the gap to the pointer closed per step
+    var SPLIT = 0.23;       // how much of that gap becomes the split
+    var MAX_SPLIT = 6;      // px: furthest each dot moves from the pair's centre
+    var SPLIT_EASE = 0.13;  // how quickly the split grows and fades per step
+    var STRETCH = 0.03;     // stretch gained per px the pair is behind
+    var MAX_STRETCH = 1.6;  // dots stretch up to 2.6x their length
+    var STEP = 1000 / 60;   // motion runs at a steady 60 steps per second
+
+    var dotYellow = document.createElement("div");
+    var dotInk = document.createElement("div");
+    dotYellow.className = "cursor-dot cursor-dot--yellow";
+    dotInk.className = "cursor-dot cursor-dot--ink";
+    dotYellow.setAttribute("aria-hidden", "true");
+    dotInk.setAttribute("aria-hidden", "true");
+    document.body.appendChild(dotYellow);
+    document.body.appendChild(dotInk);
+    root.classList.add("has-dot-cursor");
+
+    var px = null, py = null; // real pointer position
+    var cx = 0, cy = 0;       // centre of the pair, gliding after the pointer
+    var ox = 0, oy = 0;       // current split
+    var angle = 0;            // direction of travel, for the stretch
+    var frame = null;
+    var lastFrame = 0;
+    var backlog = 0;
+
+    function renderDots() {
+      dotYellow.style.translate = (cx + ox) + "px " + (cy + oy) + "px";
+      dotInk.style.translate = (cx - ox) + "px " + (cy - oy) + "px";
+      // Stretch along the direction of travel. It is tied directly to how far
+      // the pair still has to glide, so it fades smoothly with no bounce.
+      var gx = px - cx;
+      var gy = py - cy;
+      var gap = Math.sqrt(gx * gx + gy * gy);
+      var stretch = Math.min(gap * STRETCH, MAX_STRETCH);
+      if (gap > 0.5) angle = Math.atan2(gy, gx);
+      var shape = "rotate(" + angle + "rad) scale(" +
+        (1 + stretch) + ", " + (1 - stretch * 0.35) + ")";
+      dotYellow.style.transform = shape;
+      dotInk.style.transform = shape;
+    }
+
+    function stepMotion() {
+      var gx = px - cx;
+      var gy = py - cy;
+      cx += gx * FOLLOW;
+      cy += gy * FOLLOW;
+      // The split aims at a fraction of the gap, capped at MAX_SPLIT.
+      var tx = gx * SPLIT;
+      var ty = gy * SPLIT;
+      var len = Math.sqrt(tx * tx + ty * ty);
+      if (len > MAX_SPLIT) {
+        tx = (tx / len) * MAX_SPLIT;
+        ty = (ty / len) * MAX_SPLIT;
+      }
+      ox += (tx - ox) * SPLIT_EASE;
+      oy += (ty - oy) * SPLIT_EASE;
+    }
+
+    function animate(now) {
+      backlog += Math.min(now - lastFrame, 100);
+      lastFrame = now;
+      while (backlog >= STEP) {
+        stepMotion();
+        backlog -= STEP;
+      }
+      var resting = Math.abs(px - cx) < 0.05 && Math.abs(py - cy) < 0.05 &&
+        Math.abs(ox) < 0.05 && Math.abs(oy) < 0.05;
+      if (resting) {
+        cx = px;
+        cy = py;
+        ox = oy = 0;
+        frame = null;
+        renderDots();
+        return;
+      }
+      renderDots();
+      frame = requestAnimationFrame(animate);
+    }
+
+    document.addEventListener("mousemove", function (e) {
+      // First movement (or returning to the page): start on the pointer
+      // rather than gliding in from wherever the dots were left.
+      if (px === null || !root.classList.contains("dots-on")) {
+        cx = e.clientX;
+        cy = e.clientY;
+        ox = oy = 0;
+      }
+      px = e.clientX;
+      py = e.clientY;
+      root.classList.add("dots-on");
+      if (!frame) {
+        lastFrame = performance.now();
+        backlog = 0;
+        renderDots();
+        frame = requestAnimationFrame(animate);
+      }
+    }, { passive: true });
+
+    // Hide the dots when the pointer leaves the page.
+    root.addEventListener("mouseleave", function () {
+      root.classList.remove("dots-on");
+    });
+
+    // Over a product link the dots give way to the "Open" pill; over any
+    // other link they grow, standing in for the usual pointing hand.
+    document.addEventListener("mouseover", function (e) {
+      var link = e.target.closest ? e.target.closest("a") : null;
+      var product = !!(link && link.closest(".pop"));
+      root.classList.toggle("dots-label", product);
+      root.classList.toggle("dots-link", !!link && !product);
+    });
+  }
+
+  /* -- Cursor label ----------------------------------------------------- */
+  // A small "Open ↗" pill that appears beside the pointer while it is over a
+  // product link, and follows it. Mouse and trackpad only: skipped on touch.
   var labelLinks = document.querySelectorAll(".pop a");
 
   if (finePointer && labelLinks.length) {
-    var OFFSET_X = 14; // px to the right of the pointer
-    var OFFSET_Y = 18; // px below the pointer
-    var EDGE = 8;      // px kept clear of the viewport edges
+    // With the dot cursor the pill sits right at the pointer; with the system
+    // cursor it sits further out so the pointing hand does not cover it.
+    var OFFSET_X = dotCursor ? 6 : 14; // px to the right of the pointer
+    var OFFSET_Y = dotCursor ? 8 : 18; // px below the pointer
+    var EDGE = 8;                      // px kept clear of the viewport edges
 
     var label = document.createElement("div");
     label.className = "cursor-label";
     label.setAttribute("aria-hidden", "true");
-    label.textContent = "Open ↗";
+    label.textContent = "Open \u2197";
     document.body.appendChild(label);
 
     function moveLabel(e) {
@@ -117,42 +246,6 @@
       link.addEventListener("mouseleave", function () {
         label.classList.remove("is-on");
       });
-    });
-  }
-
-  /* -- Text cursor ------------------------------------------------------ */
-  // Only animate the cursor colour when motion is allowed; otherwise the
-  // static bar cursor from the stylesheet stays in place.
-  if (textEls.length && !reduceMotion) {
-    var cursorTimer = null;
-
-    // Build a bar-cursor value tinted with the given hex colour.
-    function barCursor(hex) {
-      var fill = "%23" + hex.slice(1); // # -> %23
-      return "url(\"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='12'%20height='28'%20viewBox='0%200%2012%2028'%3E%3Crect%20x='4.5'%20y='2'%20width='3'%20height='24'%20rx='1.5'%20fill='" + fill + "'/%3E%3C/svg%3E\") 6 14, text";
-    }
-
-    function paintCursor() {
-      var value = barCursor(randomColor());
-      textEls.forEach(function (el) { el.style.cursor = value; });
-    }
-
-    function startCursor() {
-      paintCursor();
-      clearInterval(cursorTimer);
-      cursorTimer = setInterval(paintCursor, INTERVAL);
-    }
-
-    function stopCursor() {
-      clearInterval(cursorTimer);
-      cursorTimer = null;
-      // Clear the inline override so the static CSS bar cursor returns.
-      textEls.forEach(function (el) { el.style.cursor = ""; });
-    }
-
-    textEls.forEach(function (el) {
-      el.addEventListener("mouseenter", startCursor);
-      el.addEventListener("mouseleave", stopCursor);
     });
   }
 })();

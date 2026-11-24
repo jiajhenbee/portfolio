@@ -177,7 +177,7 @@ a.ln--mark:focus-visible::before { clip-path: inset(0 0 0 0); }
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 10;
+  z-index: 12;
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--logo-ink);
@@ -216,16 +216,30 @@ a:focus-visible {
   border-radius: 2px;
 }
 
-/* Cursor
-   A slim vertical bar (I-beam style) when hovering text; links keep a pointer.
+/* Dot cursor
+   Two small dots replace the system cursor (see js/logo.js). The script adds
+   "has-dot-cursor" to <html> only for mouse/trackpad users who have not asked
+   for reduced motion; everyone else keeps their normal system cursor.
    ------------------------------------------------------------------------ */
-.lede,
-.body p,
-.brand__name {
-  cursor: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='12'%20height='28'%20viewBox='0%200%2012%2028'%3E%3Crect%20x='4.5'%20y='2'%20width='3'%20height='24'%20rx='1.5'%20fill='%23191B32'/%3E%3C/svg%3E") 6 14, text;
+.has-dot-cursor,
+.has-dot-cursor * { cursor: none !important; }
+
+.cursor-dot {
+  position: fixed;
+  left: -4px; /* centres the 8px dot on the pointer */
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, scale 0.15s ease;
 }
-.body p a.ln,
-.foot a { cursor: pointer; }
+.cursor-dot--yellow { z-index: 10; background: var(--logo-yellow); }
+.cursor-dot--ink { z-index: 11; background: var(--logo-ink); }
+.dots-on .cursor-dot { opacity: 1; }
+.dots-on.dots-link .cursor-dot { scale: 1.75; }  /* over ordinary links */
+.dots-on.dots-label .cursor-dot { opacity: 0; }  /* the "Open" pill takes over */
 
 /* Motion
    ------------------------------------------------------------------------ */
