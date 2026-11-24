@@ -114,6 +114,8 @@ a.ln--mark:focus-visible::before { clip-path: inset(0 0 0 0); }
   a.ln--mark::before { transition: none; }
 }
 
+/* Footer sits 48px below the main text: the column's 32px gap plus 16px */
+.col > nav { margin-top: 16px; }
 .foot {
   list-style: none;
   margin: 0;
