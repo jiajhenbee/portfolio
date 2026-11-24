@@ -239,7 +239,37 @@ a:focus-visible {
 .cursor-dot--ink { z-index: 11; background: var(--logo-ink); }
 .dots-on .cursor-dot { opacity: 1; }
 .dots-on.dots-link .cursor-dot { scale: 1.75; }  /* over ordinary links */
-.dots-on.dots-label .cursor-dot { opacity: 0; }  /* the "Open" pill takes over */
+/* Over a product link the ink dot itself swells into the "Open" pill.
+   The pill element sits exactly on the ink dot as an 8px circle of the same
+   colour, then grows to its full width and height while the text fades in.
+   On leaving it shrinks back to 8px before handing over to the dot again. */
+.dots-on.dots-label .cursor-dot--yellow { opacity: 0; }
+.dots-on.dots-label .cursor-dot--ink { opacity: 0; transition: none; }
+.has-dot-cursor .cursor-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  overflow: hidden;
+  scale: 1;
+  transition: width 0.22s ease, height 0.22s ease, opacity 0s linear 0.22s;
+}
+.has-dot-cursor .cursor-label.is-on {
+  width: var(--label-w, 67px);
+  height: 28px;
+  transition: width 0.22s ease, height 0.22s ease, opacity 0s;
+}
+.has-dot-cursor .cursor-label__text {
+  flex: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+.has-dot-cursor .cursor-label.is-on .cursor-label__text {
+  opacity: 1;
+  transition: opacity 0.15s ease 0.1s;
+}
 
 /* Motion
    ------------------------------------------------------------------------ */

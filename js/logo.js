@@ -85,6 +85,8 @@
   // here: if this script never runs, the normal cursor is still there.
   var dotCursor = finePointer && !reduceMotion;
   var root = document.documentElement;
+  var label = null;   // the "Open" pill, created further down
+  var labelWidth = 0; // its full width once expanded
 
   /* -- Dot cursor ------------------------------------------------------- */
   // Two 8px dots stacked on the pointer: logo ink on top, logo yellow beneath.
@@ -134,6 +136,17 @@
         (1 + stretch) + ", " + (1 - stretch * 0.35) + ")";
       dotYellow.style.transform = shape;
       dotInk.style.transform = shape;
+      // The pill grows out of the ink dot, so it rides on the same spot
+      // (nudged back on screen if it would run past the right or bottom edge).
+      if (label) {
+        var lx = cx - ox - 4;
+        var ly = cy - oy - 4;
+        if (label.classList.contains("is-on")) {
+          lx = Math.min(lx, window.innerWidth - 8 - labelWidth);
+          ly = Math.min(ly, window.innerHeight - 8 - 28);
+        }
+        label.style.translate = lx + "px " + ly + "px";
+      }
     }
 
     function stepMotion() {
@@ -209,21 +222,26 @@
   }
 
   /* -- Cursor label ----------------------------------------------------- */
-  // A small "Open ↗" pill that appears beside the pointer while it is over a
-  // product link, and follows it. Mouse and trackpad only: skipped on touch.
+  // An "Open ↗" pill shown while the pointer is over a product link. Mouse and
+  // trackpad only: skipped on touch.
+  // • With the dot cursor, the ink dot itself swells into the pill and shrinks
+  //   back to a dot on leaving (the pill is carried by renderDots above).
+  // • With the system cursor (reduced motion), a ready-made pill simply
+  //   appears beside the pointer.
   var labelLinks = document.querySelectorAll(".pop a");
 
   if (finePointer && labelLinks.length) {
-    // With the dot cursor the pill sits right at the pointer; with the system
-    // cursor it sits further out so the pointing hand does not cover it.
-    var OFFSET_X = dotCursor ? 6 : 14; // px to the right of the pointer
-    var OFFSET_Y = dotCursor ? 8 : 18; // px below the pointer
-    var EDGE = 8;                      // px kept clear of the viewport edges
+    var OFFSET_X = 14; // px to the right of the system cursor
+    var OFFSET_Y = 18; // px below the system cursor
+    var EDGE = 8;      // px kept clear of the viewport edges
 
-    var label = document.createElement("div");
+    label = document.createElement("div");
     label.className = "cursor-label";
     label.setAttribute("aria-hidden", "true");
-    label.textContent = "Open \u2197";
+    var labelText = document.createElement("span");
+    labelText.className = "cursor-label__text";
+    labelText.textContent = "Open \u2197";
+    label.appendChild(labelText);
     document.body.appendChild(label);
 
     function moveLabel(e) {
@@ -239,10 +257,16 @@
 
     labelLinks.forEach(function (link) {
       link.addEventListener("mouseenter", function (e) {
-        moveLabel(e);
+        if (dotCursor) {
+          // Tell the stylesheet how wide the pill should grow: text + padding.
+          labelWidth = labelText.offsetWidth + 24;
+          label.style.setProperty("--label-w", labelWidth + "px");
+        } else {
+          moveLabel(e);
+        }
         label.classList.add("is-on");
       });
-      link.addEventListener("mousemove", moveLabel);
+      if (!dotCursor) link.addEventListener("mousemove", moveLabel);
       link.addEventListener("mouseleave", function () {
         label.classList.remove("is-on");
       });
