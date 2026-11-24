@@ -114,10 +114,21 @@ a.ln--mark:focus-visible::before { clip-path: inset(0 0 0 0); }
   a.ln--mark::before { transition: none; }
 }
 
+/* Footer sits 48px below the main text: the column's 32px gap plus 16px */
+.col > nav { margin-top: 16px; }
+.foot {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
 .foot a {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  padding-block: 4px; /* keeps each link at least 24px tall for easy tapping */
   font-size: 15px;
   color: var(--fg);
   text-decoration: underline;
