@@ -77,6 +77,49 @@
     link.addEventListener("focus", tilt);
   });
 
+  /* -- Cursor label ----------------------------------------------------- */
+  // A small "Open ↗" pill that appears beside the pointer while it is over a
+  // product link, and follows it. The real cursor stays visible. Mouse and
+  // trackpad only: skipped on touch devices.
+  var finePointer = window.matchMedia
+    ? window.matchMedia("(hover: hover) and (pointer: fine)").matches
+    : false;
+  var labelLinks = document.querySelectorAll(".pop a");
+
+  if (finePointer && labelLinks.length) {
+    var OFFSET_X = 14; // px to the right of the pointer
+    var OFFSET_Y = 18; // px below the pointer
+    var EDGE = 8;      // px kept clear of the viewport edges
+
+    var label = document.createElement("div");
+    label.className = "cursor-label";
+    label.setAttribute("aria-hidden", "true");
+    label.textContent = "Open ↗";
+    document.body.appendChild(label);
+
+    function moveLabel(e) {
+      var w = label.offsetWidth;
+      var h = label.offsetHeight;
+      var x = e.clientX + OFFSET_X;
+      var y = e.clientY + OFFSET_Y;
+      // Flip to the other side of the pointer rather than run off screen.
+      if (x + w > window.innerWidth - EDGE) x = e.clientX - OFFSET_X - w;
+      if (y + h > window.innerHeight - EDGE) y = e.clientY - OFFSET_Y - h;
+      label.style.translate = x + "px " + y + "px";
+    }
+
+    labelLinks.forEach(function (link) {
+      link.addEventListener("mouseenter", function (e) {
+        moveLabel(e);
+        label.classList.add("is-on");
+      });
+      link.addEventListener("mousemove", moveLabel);
+      link.addEventListener("mouseleave", function () {
+        label.classList.remove("is-on");
+      });
+    });
+  }
+
   /* -- Text cursor ------------------------------------------------------ */
   // Only animate the cursor colour when motion is allowed; otherwise the
   // static bar cursor from the stylesheet stays in place.
